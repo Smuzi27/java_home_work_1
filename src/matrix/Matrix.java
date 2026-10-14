@@ -1,167 +1,239 @@
 package matrix;
 
-import java.util.Arrays;
+import exception.MatrixException;
 
-public class ComplexMatrix {
+public class Matrix {
+
+
     private final int rows;
-    private final int cols;
-    private final Complex[][] data;
+    private final int columns;
+    private Complex[][] matrix;
 
-    public ComplexMatrix(int rows, int cols) {
-        this.rows = rows;
-        this.cols = cols;
-        this.data = new Complex[rows][cols];
-        for (int i = 0; i < rows; i++) {
-            Arrays.fill(data[i], Complex.ZERO);
+
+    public Matrix() {
+        this.rows    = 1;
+        this.columns = 1;
+        this.matrix  = new Complex[rows][columns];
+        this.fill(new Complex(0, 0));
+    }
+
+
+    public Matrix(int rows, int columns) throws MatrixException {
+        if (rows <= 0 || columns <= 0) {
+            throw new MatrixException("Заданы неверные размеры матрицы");
         }
+        this.rows    = rows;
+        this.columns = columns;
+        this.matrix  = new Complex[rows][columns];
+        this.fill(new Complex(0, 0));
     }
 
-    public ComplexMatrix(Complex[][] data) {
-        this.rows = data.length;
-        this.cols = data[0].length;
-        this.data = new Complex[rows][cols];
-        for (int i = 0; i < rows; i++) {
-            System.arraycopy(data[i], 0, this.data[i], 0, cols);
+    // [ТВОЙ КОД - АДАПТИРОВАНО ПОД Complex]
+    public Matrix(int size) throws MatrixException {
+        if (size <= 0) {
+            throw new MatrixException("Заданы неверные размеры матрицы");
         }
+        this.rows = this.columns = size;
+        this.matrix = new Complex[size][size];
+        this.fill(new Complex(0, 0));
     }
 
-    public int getRows() {
-        return rows;
-    }
 
-    public int getCols() {
-        return cols;
-    }
-
-    public Complex get(int r, int c) {
-        return data[r][c];
-    }
-
-    public void set(int r, int c, Complex val) {
-        data[r][c] = val;
-    }
-
-    // Сложение
-    public ComplexMatrix add(ComplexMatrix o) {
-        if (this.rows != o.rows || this.cols != o.cols) {
-            throw new IllegalArgumentException("Размеры матриц для сложения должны совпадать");
+    public Matrix(Complex[][] matrix) throws MatrixException {
+        if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
+            throw new MatrixException("Передан пустой массив");
         }
-        ComplexMatrix res = new ComplexMatrix(rows, cols);
+        this.rows    = matrix.length;
+        this.columns = matrix[0].length;
+        this.matrix  = new Complex[rows][columns];
         for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                res.data[i][j] = this.data[i][j].add(o.data[i][j]);
+            for (int j = 0; j < columns; j++) {
+                this.matrix[i][j] = (matrix[i][j] != null) ? matrix[i][j] : new Complex(0, 0);
             }
         }
-        return res;
     }
 
-    // Транспонирование
-    public ComplexMatrix transpose() {
-        ComplexMatrix res = new ComplexMatrix(cols, rows);
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                res.data[j][i] = this.data[i][j];
-            }
+
+
+    public int getRows() { return rows; }
+    public int getColumns() { return columns; }
+
+    public void setElement(int row, int col, Complex value) throws MatrixException {
+        if (row < 0 || row >= rows || col < 0 || col >= columns) {
+            throw new MatrixException("Индекс выходит за границы матрицы");
         }
-        return res;
+        this.matrix[row][col] = value;
     }
 
-    // Умножение
-    public ComplexMatrix multiply(ComplexMatrix o) {
-        if (this.cols != o.rows) {
-            throw new IllegalArgumentException("Число столбцов первой матрицы должно быть равно числу строк второй");
+    public Complex getElement(int row, int col) throws MatrixException {
+        if (row < 0 || row >= rows || col < 0 || col >= columns) {
+            throw new MatrixException("Индекс выходит за границы матрицы");
         }
-        ComplexMatrix res = new ComplexMatrix(this.rows, o.cols);
-        for (int i = 0; i < this.rows; i++) {
-            for (int j = 0; j < o.cols; j++) {
-                Complex sum = Complex.ZERO;
-                for (int k = 0; k < this.cols; k++) {
-                    sum = sum.add(this.data[i][k].multiply(o.data[k][j]));
+        return this.matrix[row][col];
+    }
+
+    // [ТВОЙ КОД - ИСПРАВЛЕНО] Сложение матриц
+    public static final Matrix sum(Matrix matrix1, Matrix matrix2) throws MatrixException {
+        if (!check(matrix1, matrix2, false)) {
+            throw new MatrixException("Размеры матриц не совпадают для сложения");
+        } else {
+            Matrix result = new Matrix(matrix1.rows, matrix1.columns);
+
+            for (int i = 0; i < matrix1.rows; i++) {
+                for (int j = 0; j < matrix1.columns; j++) {
+                    result.matrix[i][j] = matrix1.matrix[i][j].add(matrix2.matrix[i][j]);
                 }
-                res.data[i][j] = sum;
+            }
+            return result;
+        }
+    }
+
+    // [ТВОЙ КОД - ИСПРАВЛЕНО] Умножение матриц
+    public static final Matrix multiply(Matrix matrix1, Matrix matrix2) throws MatrixException {
+        if (!check(matrix1, matrix2, true)) {
+            throw new MatrixException("Число столбцов первой матрицы не равно числу строк второй матрицы");
+        } else {
+            Matrix result = new Matrix(matrix1.rows, matrix2.columns);
+            int n = matrix1.columns;
+
+            for (int i = 0; i < result.rows; i++) {
+                for (int j = 0; j < result.columns; j++) {
+                    Complex sum = new Complex(0, 0);
+                    for (int k = 0; k < n; k++) {
+                        sum = sum.add(matrix1.matrix[i][k].multiply(matrix2.matrix[k][j]));
+                    }
+                    result.matrix[i][j] = sum;
+                }
+            }
+            return result;
+        }
+    }
+
+    // [ДОБАВЛЕНО] Транспонирование матрицы
+    public final Matrix transpose() throws MatrixException {
+        Matrix transposed = new Matrix(this.columns, this.rows);
+        for (int i = 0; i < this.rows; i++) {
+            for (int j = 0; j < this.columns; j++) {
+                transposed.matrix[j][i] = this.matrix[i][j];
             }
         }
-        return res;
+        return transposed;
     }
 
-    // Определитель (рекурсивно по первой строке)
-    public Complex determinant() {
-        if (rows != cols) {
-            throw new IllegalStateException("Определитель существует только для квадратных матриц");
+    // [ДОБАВЛЕНО] Вычисление определителя (разложение по первой строке)
+    public final Complex determinant() throws MatrixException {
+        if (!this.checkSquare()) {
+            throw new MatrixException("Определитель можно вычислить только для квадратной матрицы");
         }
-        return computeDet(this.data);
-    }
-
-    private Complex computeDet(Complex[][] m) {
-        int n = m.length;
-        if (n == 1) return m[0][0];
-        if (n == 2) {
-            return m[0][0].multiply(m[1][1]).subtract(m[0][1].multiply(m[1][0]));
+        if (this.rows == 1) {
+            return this.matrix[0][0];
+        }
+        if (this.rows == 2) {
+            return this.matrix[0][0].multiply(this.matrix[1][1])
+                    .subtract(this.matrix[0][1].multiply(this.matrix[1][0]));
         }
 
-        Complex det = Complex.ZERO;
-        for (int col = 0; col < n; col++) {
-            Complex minorDet = computeDet(getMinor(m, 0, col));
-            Complex term = m[0][col].multiply(minorDet);
-            det = (col % 2 == 0) ? det.add(term) : det.subtract(term);
+        Complex det = new Complex(0, 0);
+        for (int j = 0; j < this.columns; j++) {
+            Complex cofactor = getSubMatrix(0, j).determinant().scale((j % 2 == 0) ? 1.0 : -1.0);
+            det = det.add(this.matrix[0][j].multiply(cofactor));
         }
         return det;
     }
 
-    private Complex[][] getMinor(Complex[][] m, int excludedRow, int excludedCol) {
-        int n = m.length;
-        Complex[][] minor = new Complex[n - 1][n - 1];
+    // [ДОБАВЛЕНО] Вспомогательный метод: получение минора
+    private Matrix getSubMatrix(int excludeRow, int excludeCol) throws MatrixException {
+        Matrix sub = new Matrix(this.rows - 1, this.columns - 1);
         int r = 0;
-        for (int i = 0; i < n; i++) {
-            if (i == excludedRow) continue;
+        for (int i = 0; i < this.rows; i++) {
+            if (i == excludeRow) continue;
             int c = 0;
-            for (int j = 0; j < n; j++) {
-                if (j == excludedCol) continue;
-                minor[r][c++] = m[i][j];
+            for (int j = 0; j < this.columns; j++) {
+                if (j == excludeCol) continue;
+                sub.matrix[r][c] = this.matrix[i][j];
+                c++;
             }
             r++;
         }
-        return minor;
+        return sub;
     }
 
-    // Обратная матрица: A^-1 = adj(A) / det(A)
-    public ComplexMatrix inverse() {
-        Complex det = determinant();
+    // [ДОБАВЛЕНО] Нахождение обратной матрицы
+    public final Matrix inverse() throws MatrixException {
+        if (!this.checkSquare()) {
+            throw new MatrixException("Обратная матрица существует только для квадратных матриц");
+        }
+        Complex det = this.determinant();
         if (det.isZero()) {
-            throw new ArithmeticException("Матрица вырождена: определитель равен нулю");
+            throw new MatrixException("Определитель равен 0. Обратной матрицы не существует (деление невозможно)");
         }
 
-        ComplexMatrix adjugate = new ComplexMatrix(rows, cols);
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                Complex cofactor = computeDet(getMinor(this.data, i, j));
-                if ((i + j) % 2 != 0) {
-                    cofactor = Complex.ZERO.subtract(cofactor);
-                }
-                adjugate.data[j][i] = cofactor;
+        if (this.rows == 1) {
+            Matrix res = new Matrix(1, 1);
+            res.matrix[0][0] = new Complex(1, 0).divide(det);
+            return res;
+        }
+
+        Matrix cofactors = new Matrix(this.rows, this.columns);
+        for (int i = 0; i < this.rows; i++) {
+            for (int j = 0; j < this.columns; j++) {
+                double sign = ((i + j) % 2 == 0) ? 1.0 : -1.0;
+                Complex minorDet = this.getSubMatrix(i, j).determinant();
+                cofactors.matrix[i][j] = minorDet.scale(sign);
             }
         }
 
-        ComplexMatrix inv = new ComplexMatrix(rows, cols);
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                inv.data[i][j] = adjugate.data[i][j].divide(det);
+        Matrix adjugate = cofactors.transpose();
+        Matrix inverseMatrix = new Matrix(this.rows, this.columns);
+
+        for (int i = 0; i < this.rows; i++) {
+            for (int j = 0; j < this.columns; j++) {
+                inverseMatrix.matrix[i][j] = adjugate.matrix[i][j].divide(det);
             }
         }
-        return inv;
+        return inverseMatrix;
     }
 
-    // Деление матриц: A / B = A * B^-1
-    public ComplexMatrix divide(ComplexMatrix b) {
-        return this.multiply(b.inverse());
+    // [ДОБАВЛЕНО] Деление матриц: A / B = A * B^(-1)
+    public static final Matrix divide(Matrix matrix1, Matrix matrix2) throws MatrixException {
+        if (!matrix2.checkSquare()) {
+            throw new MatrixException("Делитель (вторая матрица) должен быть квадратной матрицей");
+        }
+        Matrix inverseMatrix2 = matrix2.inverse();
+        return multiply(matrix1, inverseMatrix2);
     }
 
-    public void print() {
+    // [ТВОЙ КОД - УЛУЧШЕНО ФОРМАТИРОВАНИЕ] Вывод матрицы в консоль
+    public final void print() {
         for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                System.out.printf("%-18s", data[i][j]);
+            System.out.print("| ");
+            for (int j = 0; j < columns; j++) {
+                System.out.printf("%14s ", matrix[i][j].toString());
             }
-            System.out.println();
+            System.out.println("|");
         }
+    }
+
+    // [ТВОЙ КОД - ИСПРАВЛЕНО] Заполнение матрицы заданным числом
+    public final void fill(Complex number) {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                matrix[i][j] = number;
+            }
+        }
+    }
+
+    // [ТВОЙ КОД - ИСПРАВЛЕНО] Проверка размерностей
+    private final static boolean check(Matrix matrix1, Matrix matrix2, boolean forMultiply) {
+        if (forMultiply) {
+            return matrix1.columns == matrix2.rows;
+        } else {
+            return (matrix1.rows == matrix2.rows) && (matrix1.columns == matrix2.columns);
+        }
+    }
+
+    // [ТВОЙ КОД] Проверка на квадратность
+    public final boolean checkSquare() {
+        return rows == columns;
     }
 }
