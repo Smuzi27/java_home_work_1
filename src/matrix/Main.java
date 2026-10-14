@@ -9,7 +9,7 @@ public class Main {
     private static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
-        System.out.println("=== КАЛЬКУЛЯТОР МАТРИЦ КОМПЛЕКСНЫХ ЧИСЕЛ ===");
+        System.out.println("КАЛЬКУЛЯТОР МАТРИЦ КОМПЛЕКСНЫХ ЧИСЕЛ");
 
         while (true) {
             printMenu();
@@ -23,45 +23,45 @@ public class Main {
             try {
                 switch (choice) {
                     case 1: {
-                        System.out.println("\n--- СЛОЖЕНИЕ МАТРИЦ (A + B) ---");
+                        System.out.println("\nСЛОЖЕНИЕ МАТРИЦ (A + B)");
                         Matrix m1 = inputMatrix("A");
                         Matrix m2 = inputMatrix("B");
                         Matrix result = Matrix.sum(m1, m2);
-                        System.out.println("\nРезультат сложения:");
+                        System.out.println("\nРезультат:");
                         result.print();
                         break;
                     }
                     case 2: {
-                        System.out.println("\n--- УМНОЖЕНИЕ МАТРИЦ (A * B) ---");
+                        System.out.println("\nУМНОЖЕНИЕ МАТРИЦ (A * B)");
                         Matrix m1 = inputMatrix("A");
                         Matrix m2 = inputMatrix("B");
                         Matrix result = Matrix.multiply(m1, m2);
-                        System.out.println("\nРезультат умножения:");
+                        System.out.println("\nРезультат:");
                         result.print();
                         break;
                     }
                     case 3: {
-                        System.out.println("\n--- ДЕЛЕНИЕ МАТРИЦ (A / B = A * B^-1) ---");
+                        System.out.println("\nДЕЛЕНИЕ МАТРИЦ (A / B = A * B^-1)");
                         Matrix m1 = inputMatrix("A");
                         Matrix m2 = inputMatrix("B");
                         Matrix result = Matrix.divide(m1, m2);
-                        System.out.println("\nРезультат деления:");
+                        System.out.println("\nРезультат:");
                         result.print();
                         break;
                     }
                     case 4: {
-                        System.out.println("\n--- ТРАНСПОНИРОВАНИЕ МАТРИЦЫ ---");
+                        System.out.println("\nТРАНСПОНИРОВАНИЕ МАТРИЦЫ");
                         Matrix m = inputMatrix("A");
                         Matrix result = m.transpose();
-                        System.out.println("\nТранспонированная матрица:");
+                        System.out.println("\nРезультат:");
                         result.print();
                         break;
                     }
                     case 5: {
-                        System.out.println("\n--- ВЫЧИСЛЕНИЕ ОПРЕДЕЛИТЕЛЯ ---");
+                        System.out.println("\nВЫЧИСЛЕНИЕ ОПРЕДЕЛИТЕЛЯ");
                         Matrix m = inputMatrix("A");
                         Complex det = m.determinant();
-                        System.out.println("\nОпределитель матрицы: " + det);
+                        System.out.println("\nРезультат: " + det);
                         break;
                     }
                     default:
